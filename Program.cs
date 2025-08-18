@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MinimalApi.Dominio.Entidades;
+using MinimalApi.Dominio.Enuns;
 using MinimalApi.Dominio.Interfaces;
 using MinimalApi.Dominio.ModelViews;
 using MinimalApi.Dominio.Servicos;
@@ -36,6 +37,7 @@ app.MapGet("/", () => Results.Json(new Home{})).WithTags("Home");
 #endregion
 
 # region Administradores
+
 app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDTO, IAdministradorServico administradorServico) =>
 {
     if (administradorServico.Login(loginDTO) != null)
@@ -47,6 +49,57 @@ app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDTO, IAdministra
         return Results.Unauthorized();
     }
 }).WithTags("Administradores");
+
+app.MapPost("/administradores", ([FromBody] AdministradorDTO administradorDTO, IAdministradorServico administradorServico) =>
+{
+    var validacao = new ErrosDeValidacao { Mensagens = new List<string>() };
+    if (string.IsNullOrEmpty(administradorDTO.Email))
+        validacao.Mensagens.Add("O email é obrigatório.");
+    if (string.IsNullOrEmpty(administradorDTO.Senha))
+        validacao.Mensagens.Add("A senha é obrigatória.");
+    if (administradorDTO.Perfil == null)
+        validacao.Mensagens.Add("O Perfil é obrigatório.");
+
+    var administrador = new Administrador
+    {
+        Email = administradorDTO.Email,
+        Senha = administradorDTO.Senha,
+        Perfil = administradorDTO.Perfil.ToString() ?? Perfil.Editor.ToString()
+    };
+
+    administradorServico.Incluir(administrador);
+
+}).WithTags("Administradores");
+
+
+app.MapGet("/administradores", (IAdministradorServico administradorServico, [FromQuery] int? pagina = 1) =>
+{
+    var adms = new List<AdministradorModelView>();
+    var administradores = administradorServico.Todos(pagina);
+    foreach (var adm in administradores)
+    {
+        adms.Add(new AdministradorModelView
+        {
+            Id = adm.Id,
+            Email = adm.Email,
+            Perfil = adm.Perfil
+        });
+    }
+    return Results.Ok(adms);
+}).WithTags("Administradores");
+
+
+app.MapGet("/administradores/{id}", ([FromRoute] int id, IAdministradorServico administradorServico) =>
+{
+    var administrador = administradorServico.BuscaPorId(id);
+
+    if (administrador == null) return Results.NotFound();
+
+    return Results.Ok(administrador);
+
+}).WithTags("Administradores");
+
+
 #endregion
 
 # region Veiculos
