@@ -8,10 +8,11 @@ using MinimalApi.DTOs;
 using MinimalApi.Infraestrutura.Db;
 
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
 
 builder.Services.AddScoped<IAdministradorServico, AdministradorServico>();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DbContexto>(
     options =>
@@ -22,6 +23,8 @@ builder.Services.AddDbContext<DbContexto>(
        ); 
     }
 );
+
+var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 
@@ -36,6 +39,9 @@ app.MapPost("/login", ([FromBody] LoginDTO loginDTO, IAdministradorServico admin
         return Results.Unauthorized();
     }
 });
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
 
