@@ -53,14 +53,16 @@ app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDTO, IAdministra
 
 ErrosDeValidacao validaDTO(VeiculoDTO veiculoDTO)
 {
-    var validacao = new ErrosDeValidacao();
+    var validacao = new ErrosDeValidacao { 
+        Mensagens = new List<string>()
+};
 
     if (string.IsNullOrEmpty(veiculoDTO.Nome))
-        validacao.Mensagem.Add("O nome é obrigatório.");
+        validacao.Mensagens.Add("O nome é obrigatório.");
     if (string.IsNullOrEmpty(veiculoDTO.Marca))
-        validacao.Mensagem.Add("A Marca é obrigatória.");
+        validacao.Mensagens.Add("A Marca é obrigatória.");
     if (veiculoDTO.Ano < 1950)
-        validacao.Mensagem.Add("Veículo muito antigo, o ano deve ser maior que 1950.");
+        validacao.Mensagens.Add("Veículo muito antigo, o ano deve ser maior que 1950.");
 
     return validacao;
 }
@@ -68,7 +70,7 @@ ErrosDeValidacao validaDTO(VeiculoDTO veiculoDTO)
 app.MapPost("/veiculos", ([FromBody] VeiculoDTO veiculoDTO, IVeiculoServico veiculoServico) =>
 {
     var validacao = validaDTO(veiculoDTO);
-    if(validacao.Mensagem.Count > 0)
+    if(validacao.Mensagens.Count > 0)
     {
         return Results.BadRequest(validacao);
     }
@@ -107,11 +109,11 @@ app.MapGet("/veiculos/{id}", ([FromRoute] int id, IVeiculoServico veiculoServico
 app.MapPut("/veiculos/{id}", ([FromRoute] int id, VeiculoDTO veiculoDTO, IVeiculoServico veiculoServico) =>
 {
      var validacao = validaDTO(veiculoDTO);
-    if(validacao.Mensagem.Count > 0)
+    if(validacao.Mensagens.Count > 0)
     {
         return Results.BadRequest(validacao);
     }
-    
+
     var veiculo = veiculoServico.BuscaPorId(id);
     if (veiculo == null) return Results.NotFound();
 
