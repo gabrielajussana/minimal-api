@@ -35,8 +35,8 @@ public class DbContexto : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var stringConexao = _configuracaoAppSettings?.GetConnectionString("mysql")
-                ?? "server=localhost;database=seubanco;user=seuusuario;password=suasenha"; // ajuste conforme necessário
+            var stringConexao = _configuracaoAppSettings?.GetConnectionString("MySql")
+                ?? "server=localhost;database=seubanco;user=seuusuario;password=suasenha"; 
 
             optionsBuilder.UseMySql(
                 stringConexao,
